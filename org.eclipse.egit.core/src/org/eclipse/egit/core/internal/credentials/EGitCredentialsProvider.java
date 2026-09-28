@@ -113,14 +113,20 @@ public class EGitCredentialsProvider extends CredentialsProvider {
 			if ((user != null) && (password != null)) {
 				credentials = new UserPasswordCredentials(user, password);
 			} else {
-				try {
-					credentials = Activator.getDefault().getCredentialsStore()
-							.getCredentials(uri);
-				} catch (StorageException e) {
-					Activator.logError(MessageFormat.format(
-							CoreText.EGitCredentialsProvider_errorReadingCredentials,
-							uri), e);
-					clearCredentials(uri);
+				// Let a configured native git credential helper (e.g. Git
+				// Credential Manager) answer first; this enables OAuth SSO and
+				// similar flows that EGit does not implement itself.
+				credentials = GitCredentialHelper.fill(uri, user);
+				if (credentials == null) {
+					try {
+						credentials = Activator.getDefault()
+								.getCredentialsStore().getCredentials(uri);
+					} catch (StorageException e) {
+						Activator.logError(MessageFormat.format(
+								CoreText.EGitCredentialsProvider_errorReadingCredentials,
+								uri), e);
+						clearCredentials(uri);
+					}
 				}
 			}
 			if (credentials == null) {

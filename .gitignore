@@ -12,3 +12,6 @@ target/
 .tycho-consumer-pom.xml
 .polyglot.*
 pom.tycho
+
+# Local JGit p2 repository used for offline builds
+.jgit-p2/
