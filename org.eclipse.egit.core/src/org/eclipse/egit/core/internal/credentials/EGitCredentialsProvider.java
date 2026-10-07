@@ -16,7 +16,9 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.function.Function;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.egit.core.Activator;
+import org.eclipse.egit.core.GitCorePreferences;
 import org.eclipse.egit.core.credentials.CredentialsUI;
 import org.eclipse.egit.core.credentials.UserPasswordCredentials;
 import org.eclipse.egit.core.internal.CoreText;
@@ -113,14 +115,22 @@ public class EGitCredentialsProvider extends CredentialsProvider {
 			if ((user != null) && (password != null)) {
 				credentials = new UserPasswordCredentials(user, password);
 			} else {
-				try {
-					credentials = Activator.getDefault().getCredentialsStore()
-							.getCredentials(uri);
-				} catch (StorageException e) {
-					Activator.logError(MessageFormat.format(
-							CoreText.EGitCredentialsProvider_errorReadingCredentials,
-							uri), e);
-					clearCredentials(uri);
+				// Let a configured native git credential helper (e.g. Git
+				// Credential Manager) answer first; this enables OAuth SSO and
+				// similar flows that EGit does not implement itself.
+				if (useNativeGitCredentialHelper()) {
+					credentials = GitCredentialHelper.fill(uri, user);
+				}
+				if (credentials == null) {
+					try {
+						credentials = Activator.getDefault()
+								.getCredentialsStore().getCredentials(uri);
+					} catch (StorageException e) {
+						Activator.logError(MessageFormat.format(
+								CoreText.EGitCredentialsProvider_errorReadingCredentials,
+								uri), e);
+						clearCredentials(uri);
+					}
 				}
 			}
 			if (credentials == null) {
@@ -149,6 +159,12 @@ public class EGitCredentialsProvider extends CredentialsProvider {
 		clearCredentials(uri);
 		user = null;
 		password = null;
+	}
+
+	private static boolean useNativeGitCredentialHelper() {
+		return Platform.getPreferencesService().getBoolean(Activator.PLUGIN_ID,
+				GitCorePreferences.core_useNativeGitCredentialHelper, false,
+				null);
 	}
 
 	private void clearCredentials(URIish uri) {

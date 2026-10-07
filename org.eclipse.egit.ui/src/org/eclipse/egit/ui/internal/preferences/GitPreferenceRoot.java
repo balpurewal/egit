@@ -357,6 +357,17 @@ public class GitPreferenceRoot extends DoublePreferencesPreferencePage
 						store == null ? null : getSecondaryPreferenceStore());
 			}
 		});
+		addField(new BooleanFieldEditor(
+				GitCorePreferences.core_useNativeGitCredentialHelper,
+				UIText.GitPreferenceRoot_UseNativeGitCredentialHelper,
+				secureGroup) {
+
+			@Override
+			public void setPreferenceStore(IPreferenceStore store) {
+				super.setPreferenceStore(
+						store == null ? null : getSecondaryPreferenceStore());
+			}
+		});
 		updateMargins(secureGroup);
 
 		boolean lfsAvailable = LfsFactory.getInstance().isAvailable()
