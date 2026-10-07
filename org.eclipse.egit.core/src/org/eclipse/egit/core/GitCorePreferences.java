@@ -86,6 +86,13 @@ public final class GitCorePreferences {
 	public static final String core_saveCredentialsInSecureStore = "core_save_credentials_in_secure_store"; //$NON-NLS-1$
 
 	/**
+	 * Whether to delegate HTTP(S) credential lookup to the native git
+	 * credential helpers configured via {@code credential.helper} (requires git
+	 * to be installed).
+	 */
+	public static final String core_useNativeGitCredentialHelper = "core_use_native_git_credential_helper"; //$NON-NLS-1$
+
+	/**
 	 * HTTP client library to use. Currently allowed values are "jdk" and
 	 * "apache", case insensitive, if undefined or any other value the default
 	 * "jdk" will be used.
